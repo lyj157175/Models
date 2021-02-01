@@ -37,8 +37,6 @@ class C2W(nn.Module):
 
 
 
-
-
 class Config:
     def __init__(self):
         self.n_chars = 32         # 字符个数
