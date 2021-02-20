@@ -2,6 +2,8 @@
 
 #### NLP经典模型的pytorch实现
 
+博客地址：https://blog.csdn.net/lyj223061/article/details/113850414
+
 1-Skip-Gram + NEG
 
 2-Glove
@@ -28,7 +30,7 @@
 
 
 
-Sentiment Analysis主题模型实现：
+#### Sentiment Analysis经典模型实现
 
 - RNN
 - Bi-LSTM
@@ -37,5 +39,6 @@ Sentiment Analysis主题模型实现：
 
 
 
-- Author Email : lyj157175@163.com
-- GitHub: https://github.com/lyj157175/Models
+Author Email : lyj157175@163.com
+
+GitHub: https://github.com/lyj157175/Models
