@@ -52,3 +52,4 @@ if __name__ == '__main__':
     word2idx = {'the':0, 'a':1, 'b':2}
     fileaname = 'glove.txt'
     model.save_embedding(word2idx, fileaname)
+
