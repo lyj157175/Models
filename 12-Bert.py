@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.optim import Adam 
 from collections import Counter
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
@@ -195,6 +196,8 @@ class Bert(nn.Module):
             x = transformer(x, mask) 
         return x
 
+
+
 # ---------------------------------- BertDataset ------------------------------------
 
 class BertDataset(Dataset):
@@ -270,60 +273,114 @@ class BertDataset(Dataset):
             return self.datas[random.randrange(len(self.datas))][1], 0    # 不是下一句
 
 
-# --------------------------------------- BertTrainer ---------------------------------
+# --------------------------------------- Bert预训练任务及BertTrainer ---------------------------------
+
+class BertLM(nn.Module):
+    '''
+    BERT Language Model(两个预训练任务)
+    Masked Language Model + Next Sentence Prediction Model 
+    '''
+    def __init__(self, bert, vocab_size):
+        super(BertLM, self).__init__()
+        self.bert = bert
+        self.mask_lm = MaskedLanguageModel(self.bert.hidden, vocab_size)
+        self.next_sentence = NextSentencePrediction(self.bert.hidden)
+
+    def forward(self, x, segment_label):
+        out = self.bert(x, segment_label)  # b, max_len, hidden
+        return self.mask_lm(out), self.next_sentence(out)   # b, max_len, vocab_size / b, max_len, 2
+
+
+class MaskedLanguageModel(nn.Module):
+    '''
+    n分类问题：n-class = vocab_size
+    '''
+    def __init__(self, hidden, vocab_size):
+        self.linear = nn.Linear(hidden, vocab_size)
+        self.softmax = nn.LogSoftmax(dim=-1)
+
+    def forward(self, x):
+        return self.softmax(self.linear(x))   # x的所有位置均预测
+
+
+class NextSentencePrediction(nn.Module):
+    """
+    2-class分类: is_next, is_not_next
+    """
+    def __init__(self, hidden):
+        super(NextSentencePrediction, self).__init__()
+        self.linear = nn.Linear(hidden, 2)
+        self.softmax = nn.LogSoftmax(dim=-1)
+
+    def forward(self, x):
+        return self.softmax(self.linear(x[:, 0]))  # 只在x的0位置上进行预测
+
+
 
 class BertTtrainer:
+    '''
+    Bert预训练模型包括两个LM预训练任务:
+    1. Masked Language Model
+    2. Next Sentence prediction
+    '''
+    def __init__(self, bert, vocab_size, train_dataloader, test_dataloader=None, lr=1e-4, 
+                    betas=(0.9, 0.999), weight_decay=0.01):
+        self.bert = bert
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.bert_lm = BertLM(bert, vocab_size).to(self.device)
 
-    def __init__(self, bert, )
+        if torch.cuda.device_count() > 1:
+            self.bert_lm = nn.DataParallel(self.bert_lm)
+        
+        self.train_data = train_dataloader
+        self.test_data = test_dataloader
+        self.optim = optim(self.bert_lm.parameters(), lr=lr, betas=betas, weight_decay=weight_decay)
+        self.criterion = nn.NLLLoss(ignore_index=0)
+        print('Total Parameters:', sum([p.nelement() for p in self.bert_lm.parameters()]))
+
+    
+    def train(self, epoch):
+        self.iteration(epoch, self.train_data)
+    
+    def test(self, epoch):
+        self.iteration(epoch, self.test_data, mode='test')
+
+    
+    def iteration(self, epoch, data_loader, mode='train'):
+        total_loss = 0.0
+        total_correct = 0
+        total_element = 0
+
+        for i, data in enumerate(data_loader):
+            data = {key, value.to(self.device) for key, value in data.items()}
+            mask_lm_output, next_sentence_output = self.bert_lm(data['bert_input'], data['segment_label'])
+            mask_loss = criterion(mask_lm_output.transpose(1, 2), data['bert_label'])
+            next_loss = criterion(next_sentence_output, data['is_next'])
+
+            loss = mask_loss + next_loss
+            if mode =='train':
+                self.optim.zero_grad()
+                loss.backward()
+                self.optim.step()
+                
+            correct = next_sentence_output.argmax(dim=-1).eq(data['is_next']).sum().item()
+            total_loss += loss.item()
+            total_correct += correct
+            total_element += data['is_next'].nelement()
+
+        print('mode: %s, epoch:%d, avg_loss: %.5f, total_acc: %.5f' % (mode, epoch, total_loss/len(data_loader), total_correct*100.0/total_element))
+
+
+    def save(self, epoch, save_path='bert_pretrain.model'):
+        torch.save(self.bert.cpu(), save_path)
+        self.bert.to(self.device)
+
+
+
 
 if __name__ == '__main__':
+    args=Args()
     bert = Bert(3000, 768, 12, 12, 0.1)
     # print(bert)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Args(object):
-
-    def __init__(self):
-        self.train_dataset='data/corpus.small'
-        self.test_dataset='data/corpus.small'
-        self.vocab_path='data/corpus.small.vocab'
-        self.output_path='data/corpus.small.vocab'
-        self.hidden=256
-        self.layers=8
-        self.attn_heads=8
-        self.seq_len=20
-        self.batch_size=64
-        self.epochs=10
-        self.num_workers=5
-        self.with_cuda=True
-        self.log_freq=10
-        self.corpus_lines=""
-        self.lr=1e-3
-        self.adam_weight_decay=0.01
-        self.adam_beta1=0.9
-        self.adam_beta2=0.999
-        
-args=Args()
-
-
 
 
