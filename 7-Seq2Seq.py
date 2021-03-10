@@ -18,7 +18,7 @@ class Seq2Seq(nn.Module):
 
     def forward(self, src, tgt, mode='train'):
         src_embed = self.src_embed(src)    # b, max_len, embedding_dim
-        # enc_out: b, max_len, hidden_size 
+        # enc_out: b, max_len, hidden_size
         # enc_hidden: (num_layers*1, b, hidden_size / _)返回每层最后一个时间步的h和c
         enc_out, enc_hidden = self.encoder(src_embed)  
 

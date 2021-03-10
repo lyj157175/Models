@@ -377,10 +377,8 @@ class BertTtrainer:
 
 
 
-
 if __name__ == '__main__':
     args=Args()
     bert = Bert(3000, 768, 12, 12, 0.1)
     # print(bert)
-
 
