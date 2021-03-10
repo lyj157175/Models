@@ -1,5 +1,6 @@
 ## Models
-#### 有任何问题欢迎发送邮件与我交流：lyj157175@163.com，此模型实现库还在继续完善中。韩小信博客地址：https://blog.csdn.net/lyj223061/article/details/113850414
+
+有任何问题欢迎发送邮件与我交流：lyj157175@163.com，此模型实现库还在继续完善中。韩小信博客地址：https://blog.csdn.net/lyj223061/article/details/113850414
 
 
 ### NLP经典模型的pytorch实现
@@ -29,7 +30,7 @@
 
 
 
-### Sentiment Analysis经典模型实现
+### 情感分类
 
 - rnn,  lstm,  bi-lstm,  treelstm,  td_lstm,  tc_lstm,  atae_lstm,  menmnet,  bert_spc
 
