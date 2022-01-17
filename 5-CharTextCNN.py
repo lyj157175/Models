@@ -8,13 +8,15 @@ class ChartextCNN(nn.Module):
 
     def __init__(self, config):
         super(ChartextCNN, self).__init__()
-        self.in_features = [config.num_chars] + config.features[:-1]
-        self.out_features = config.features
-        self.kernel_sizes = config.kernel_sizes
+        self.in_features = [config.num_chars] + config.features[:-1]  # [70, 256, 256, 256, 256, 256]
+        self.out_features = config.features    # [256, 256, 256, 256, 256, 256]
+        self.kernel_sizes = config.kernel_sizes   # [7,7,3,3,3,3]
         self.dropout = config.dropout
 
+        # conv1d(embeding, num_filters, filer_size)
+        # out = Conv1d(x) out: b, num_filetrs, (n+2p-f)/s + 1
         self.conv1d_1 = nn.Sequential(
-            nn.Conv1d(self.in_features[0], self.out_features[0], self.kernel_sizes[0], stride=1),
+            nn.Conv1d(self.in_features[0], self.out_features[0], self.kernel_sizes[0], stride=1), 
             nn.BatchNorm1d(self.out_features[0]),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=3, stride=3)
@@ -94,7 +96,4 @@ if __name__ == '__main__':
     x = torch.zeros([64, 70, 1014])  # b, num_chars, seq_len
     out = model(x)
     print(out.shape) 
-
-
-
 

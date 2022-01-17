@@ -32,7 +32,6 @@ class Seq2Seq_attention(nn.Module):
         dec_pre_hidden=(h0, c0): [(1, b, lstm_size), (1, b, lstm_size)]
         enc_output（相当于公式中的hj）: b, max_len, 2*lstm_size
         '''
-
         # 计算si-1
         dec_pre_hidden_h = dec_pre_hidden[0].squeeze(0).unsqueeze(1).repeat(1, 100, 1)  # b, max_len, lstm_dim
 
@@ -56,16 +55,11 @@ class Seq2Seq_attention(nn.Module):
         # enc_hidden = (h, c): (2, b, lstm_size / 2, b, lstm_size)
         enc_output, enc_hidden = self.encoder(src_embed)   
 
-        self.attn_outputs = Variable(torch.zeros(tgt.size(0),
-                                                tgt.size(1),
-                                                enc_output.size(2)))   # b, max_len, 2*lstm_size
-        self.dec_outputs = Variable(torch.zeros(tgt.size(0),
-                                                tgt.size(1),
-                                                enc_hidden[0].size(2)))  # b, max_len, lstm_size
+        self.attn_outputs = Variable(torch.zeros(tgt.size(0), tgt.size(1), enc_output.size(2)))   # b, max_len, 2*lstm_size
+        self.dec_outputs = Variable(torch.zeros(tgt.size(0), tgt.size(1), enc_hidden[0].size(2)))  # b, max_len, lstm_size
         if is_gpu:
             self.attn_outputs = self.attn_outputs.cuda()
             self.dec_outputs = self.dec_outputs.cuda()
-            
 
         if mode == 'train':
             tgt_embed = self.tgt_embed(tgt)   # b, max_len, embedding_dim

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-import torch.nn as nn
+import torch.nn as nn 
 import torch.nn.functional as F
 import math 
 import copy
@@ -26,7 +26,7 @@ class Embedding(nn.Module):
         self.embed = nn.Embedding(vocab_size, model_dim)  
     
     def forward(self, x):
-        return self.embed(x) * math.sqrt(model_dim)   # b, max_len, model_dim
+        return self.embed(x) * math.sqrt(self.model_dim)   # b, max_len, model_dim
 
 
 # Positional Encoding
@@ -102,9 +102,9 @@ def attention(q, k, v, mask=None, dropout=None):
     scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(dk)  # b, 8, max_len, max_len
 
     if mask is not None:
-        scores = scores.masked_full(mask==0, -1e9)  # padding mask, 极小值填充
+        scores = scores.masked_fill(mask==0, -1e9)  # padding mask, 极小值填充
     
-    attention = F.sotfmax(scores, dim=-1)  # b, 8, max_len, max_len
+    attention = F.sotfmax(scores, dim=-1)  # 计算出来的注意力权重分数，b, 8, max_len, max_len
     if dropout is not None:
         attention = dropout(attention)   # b, 8, max_len, max_len
     return torch.matmul(attention, v), attention
@@ -135,7 +135,7 @@ class MultiHeadedAttention(nn.Module):
         # x: b, 8, max_len, 64
         x, self.attn = attention(q, k, v, mask=mask, dropout=self.dropout)
         # x: b, max_len, model_dim
-        x = x.transpose(1, 2).contiguous().view(batch_size, -1, self.head*self.dk) 
+        x = x.transpose(1, 2).contiguous().view(batch_size, -1, self.head*self.dk) # 多头合并
         return self.linears[-1](x)  # b, max_len, model_dim
 
 
@@ -322,7 +322,8 @@ def squence_mask(size):
 
 
 if __name__ =='__main__':
-    model = Transformer(src_vocab=3000, tgt_vocab=3000, model_dim=512, head=8, ff_dim=2048, max_len=5000, dropout=0.1, n=6)
+    model = Transformer(src_vocab=3000, tgt_vocab=3000, model_dim=512, head=8, 
+    ff_dim=2048, max_len=5000, dropout=0.1, n=6)
     print(model)
    
 

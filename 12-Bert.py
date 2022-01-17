@@ -28,7 +28,7 @@ class BertEmbedding(nn.Module):
         self.segment_embed = SegmentEmbedding(embed_size)
 
     def forward(self, sequence, segment_label):
-        x = self.self.token_embed(sequence) + self.position_embed(sequence) + self.segment_embed(segment_label)
+        x = self.token_embed(sequence) + self.position_embed(sequence) + self.segment_embed(segment_label)
         return self.dropout(x)
 
 
@@ -92,7 +92,7 @@ class LayerNorm(nn.Module):
 
     def forward(self, x):
         x_mean = x.mean(-1, keepdim=True)
-        x_std = s.std(-1, keepdim=True)
+        x_std = x.std(-1, keepdim=True)
         return self.alpha * (x - x_mean) / (x_std + self.eps) + self.beta 
 
 
@@ -334,7 +334,7 @@ class BertTtrainer:
         
         self.train_data = train_dataloader
         self.test_data = test_dataloader
-        self.optim = optim(self.bert_lm.parameters(), lr=lr, betas=betas, weight_decay=weight_decay)
+        self.optim = Adam(self.bert_lm.parameters(), lr=lr, betas=betas, weight_decay=weight_decay)
         self.criterion = nn.NLLLoss(ignore_index=0)
         print('Total Parameters:', sum([p.nelement() for p in self.bert_lm.parameters()]))
 

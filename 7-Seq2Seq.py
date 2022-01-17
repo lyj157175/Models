@@ -9,10 +9,8 @@ class Seq2Seq(nn.Module):
         self.src_embed = nn.Embedding(src_vocab_size, embedding_dim)
         self.tgt_embed = nn.Embedding(tgt_vocab_size, embedding_dim)
 
-        self.encoder = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_size, num_layers=4,
-                        batch_first=True)
-        self.decoder = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_size, num_layers=4,
-                        batch_first=True)
+        self.encoder = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_size, num_layers=4, batch_first=True)
+        self.decoder = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_size, num_layers=4, batch_first=True)
         
         self.fc = nn.Linear(hidden_size, tgt_vocab_size)
 
@@ -26,11 +24,11 @@ class Seq2Seq(nn.Module):
             tgt_embed = self.tgt_embed(tgt)   # b, max_len, embedding_dim
             # dec_out: b, max_len, hidden_size
             # dec_hidden: (num_layers*1, b, hidden_size / _)
-            dec_out, dec_hidden = self.decoder(tgt_embed, enc_hidden)  
+            dec_out, dec_hidden = self.decoder(tgt_embed, enc_hidden)  # 将encoedr的hidden传入
             outs = self.fc(dec_out)   # b, max_len, tgt_vovab_size
         else:
             tgt_embed = self.tgt_embed(tgt)  # b, max_len, embedding_dim
-            dec_pre_hidden = enc_hidden 
+            dec_pre_hidden = enc_hidden
             outs = []
             for i in range(100):
                 # dec_out: b, 1, hidden_size
@@ -39,7 +37,7 @@ class Seq2Seq(nn.Module):
                 pred = torch.argmax(out, dim=-1)  # b, 1
                 outs.append(pred.squeeze().cpu().numpy())
                 dec_pre_hidden = dec_hidden
-                tgt_embed = self.tgt_embed(pred)  
+                tgt_embed = self.tgt_embed(pred)
         return outs
 
 

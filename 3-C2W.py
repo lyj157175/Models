@@ -26,6 +26,7 @@ class C2W(nn.Module):
         x = torch.Tensor(x).long()   # b, char_seq_len
         embed_x = self.char_embed(x) # b, char_seq_len, char_embed_dim
         char_out, _ = self.char_lstm(embed_x)   # b, char_seq_len, 2*char_hidden_dim
+        
         word_input = torch.cat([char_out[:, -1, 0:self.char_hidden_dim], 
                                 char_out[:, 0, self.char_hidden_dim:]], dim=1)   # b, 2*char_hidden_dim
         word_input = self.fc1(word_input)   # b, word_embed_dim

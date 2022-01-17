@@ -14,11 +14,13 @@ class HAN_Attention(nn.Module):
         else:
             self.word_embed = nn.Embedding(vocab_size, embedding_dim)
         # 词注意力
-        self.word_gru = nn.GRU(input_size=embedding_dim, hidden_size=gru_size, num_layers=1, bidirectional=True, batch_first=True)
+        self.word_gru = nn.GRU(input_size=embedding_dim, hidden_size=gru_size, 
+                                num_layers=1, bidirectional=True, batch_first=True)
         self.word_query = nn.Parameter(torch.Tensor(2*gru_size, 1), requires_grad=True)   # 公式中的u(w)  
         self.word_fc = nn.Linear(2*gru_size, 2*gru_size)
         # 句子注意力
-        self.sentence_gru = nn.GRU(input_size=2*gru_size, hidden_size=gru_size, num_layers=1, bidirectional=True, batch_first=True)
+        self.sentence_gru = nn.GRU(input_size=2*gru_size, hidden_size=gru_size, 
+                                num_layers=1, bidirectional=True, batch_first=True)
         self.sentence_query = nn.Parameter(torch.Tensor(2*gru_size, 1), requires_grad=True)   # 公式中的u(s)
         self.sentence_fc = nn.Linear(2*gru_size, 2*gru_size)
         # 文档分类
@@ -75,8 +77,5 @@ if __name__ == '__main__':
     x[0][0][0:10] = 1
     document_class = model(x)
     print(document_class.shape)  # 64, 4
-
-
-
 
 

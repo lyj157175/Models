@@ -70,4 +70,3 @@ if __name__ == '__main__':
     x = torch.zeros([64, 50])
     out = model(x)
     print(out.shape)
-    

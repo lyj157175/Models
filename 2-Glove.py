@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class Glove(nn.Module):
     
     def __init__(self, vocab_size, embedding_dim, x_max, alpha):
@@ -10,7 +11,7 @@ class Glove(nn.Module):
         self.x_max = x_max
         self.alpha = alpha
 
-        # 中心词的词向量的中心词的bias
+        # 中心词的词向量和中心词的bias
         self.c_embed = nn.Embedding(self.vocab_size, self.embedding_dim).type(torch.float64)
         self.c_bias = nn.Embedding(self.vocab_size, 1).type(torch.float64)
         # 周围词的词向量和周围词的bias
