@@ -28,6 +28,10 @@
 
 12-Bert
 
+13-BiLSTM_CRF
+
+14-Conformer（语音识别sota模型复现）
+
 
 ### 情感分类
 
