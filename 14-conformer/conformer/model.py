@@ -79,30 +79,39 @@ class Conformer(nn.Module):
 
 
     def decode(self, encoder_output, max_length):
-        pred_tokens, hidden_state = list(), None
-        decoder_input = encoder_output.new_tensor([[self.decoder.sos_id]], dtype=torch.long)
+        # encoder_output: seq_len, d_model
+        pred_tokens, hidden_state = [], None
+        decoder_input = encoder_output.new_tensor([[self.decoder.sos_id]], dtype=torch.long)  # [[1]] / 1, 1
 
         for t in range(max_length):
+            # decoder_output: 1, 1, d_model
             decoder_output, hidden_state = self.decoder(decoder_input, hidden_states=hidden_state)
+            # d_model / d_model => d_model
             step_output = self.joint(encoder_output[t].view(-1), decoder_output.view(-1))
-            step_output = step_output.softmax(dim=0)
-            pred_token = step_output.argmax(dim=0)
+            step_output = step_output.softmax(dim=0)   # softmax
+            pred_token = step_output.argmax(dim=0)     # best_token
             pred_token = int(pred_token.item())
             pred_tokens.append(pred_token)
-            decoder_input = step_output.new_tensor([[pred_token]], dtype=torch.long)
+            decoder_input = step_output.new_tensor([[pred_token]], dtype=torch.long)  # 以最优token继续解码
 
         return torch.LongTensor(pred_tokens)
 
 
 
     def recognize(self, inputs, input_lengths):
-        outputs = list()
+        '''greeady search'''
+        # inputs: b, seq_len, feat_dim
+        # input_lengths: b
+        outputs = []
+        # encoder_outputs: b, seq_len, d_model
         encoder_outputs, output_lengths = self.encoder(inputs, input_lengths)
         max_length = encoder_outputs.size(1)   # seq_len
 
-        for encoder_output in encoder_outputs:  # encoder_output: seq_len, d_model
-            decoded_seq = self.decode(encoder_output, max_length)  #
-            outputs.append(decoded_seq)
+        for encoder_output in encoder_outputs:
+            # 每次解码一个句子
+            # encoder_output: seq_len, d_model
+            decoded_seq = self.decode(encoder_output, max_length)  # tgt_len, d_model
+            outputs.append(decoded_seq)   # b, tgt_len, d_model
 
         outputs = torch.stack(outputs, dim=1).transpose(0, 1)
 
